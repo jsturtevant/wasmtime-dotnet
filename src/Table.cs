@@ -82,7 +82,15 @@ namespace Wasmtime
 
             try
             {
-                var error = Native.wasmtime_table_new(store.Context.handle, tableType, in value, out this.table);
+                IntPtr error;
+
+                unsafe
+                {
+                    fixed (ExternTable* tablePtr = &table)
+                    {
+                        error = (IntPtr)Interop.Wasmtime.wasmtime_table_new((void*)store.Context.handle, (void*)tableType.DangerousGetHandle(), &value, tablePtr);
+                    }
+                }
                 GC.KeepAlive(store);
 
                 if (error != IntPtr.Zero)
